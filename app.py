@@ -109,10 +109,22 @@ max_bracket   = df["Bracket"].iloc[-1]
 gain_pct      = (total_gain / starting_balance) * 100
 
 col1, col2, col3, col4 = st.columns(4)
-col1.metric("Starting Balance",  f"${starting_balance:,.2f}")
-col2.metric("Final Balance",     f"${final_balance:,.2f}",  delta=f"+${total_gain:,.2f}")
-col3.metric("Total Growth",      f"{gain_pct:,.1f}%")
-col4.metric("Max Bracket",       f"#{max_bracket}")
+
+def metric_card(label, value, delta=None):
+    delta_html = f'<div style="color:#3fb950;font-size:0.95rem;margin-top:4px;">{delta}</div>' if delta else ""
+    return f"""
+    <div style="background:linear-gradient(135deg,#1c2333,#21262d);border:1px solid #30363d;
+                border-radius:12px;padding:18px 22px;">
+      <div style="color:#a8c0d6;font-size:0.9rem;font-weight:600;letter-spacing:0.04em;
+                  text-transform:uppercase;margin-bottom:8px;">{label}</div>
+      <div style="color:#ffffff;font-size:1.9rem;font-weight:700;line-height:1.1;">{value}</div>
+      {delta_html}
+    </div>"""
+
+col1.markdown(metric_card("Starting Balance", f"${starting_balance:,.2f}"), unsafe_allow_html=True)
+col2.markdown(metric_card("Final Balance", f"${final_balance:,.2f}", delta=f"▲ +${total_gain:,.2f}"), unsafe_allow_html=True)
+col3.markdown(metric_card("Total Growth", f"{gain_pct:,.1f}%"), unsafe_allow_html=True)
+col4.markdown(metric_card("Max Bracket", f"#{max_bracket}"), unsafe_allow_html=True)
 
 st.divider()
 
