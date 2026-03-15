@@ -88,16 +88,25 @@ with st.sidebar:
 # ── Calculation ───────────────────────────────────────────────────────────────
 rows = []
 balance = starting_balance
+current_bracket = 1
+bracket_base = starting_balance  # lot size is fixed at bracket entry balance
 
 for day in range(1, num_days + 1):
-    profit = balance * (daily_profit_pct / 100)
+    # Daily profit is FIXED within a bracket (same lot size = same dollar profit)
+    profit = bracket_base * (daily_profit_pct / 100)
     balance += profit
-    bracket = math.floor((balance - starting_balance) / bracket_size) + 1
+
+    # Check if we've crossed into a new bracket
+    new_bracket = math.floor((balance - starting_balance) / bracket_size) + 1
+    if new_bracket > current_bracket:
+        current_bracket = new_bracket
+        bracket_base = starting_balance + (current_bracket - 1) * bracket_size
+
     rows.append({
         "Day": day,
         "Balance ($)": round(balance, 2),
         "Daily Profit ($)": round(profit, 2),
-        "Bracket": int(bracket),
+        "Bracket": int(current_bracket),
     })
 
 df = pd.DataFrame(rows)

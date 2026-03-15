@@ -174,11 +174,22 @@
 
     const rows = [];
     let balance = start;
+    let currentBracket = 1;
+    let bracketBase = start; // balance at which current bracket started — lot size is fixed here
+
     for (let d = 1; d <= days; d++) {
-      const profit = balance * (pct / 100);
+      // Daily profit is FIXED within a bracket (same lot size = same dollar profit)
+      const profit = bracketBase * (pct / 100);
       balance += profit;
-      const b = Math.floor((balance - start) / bracket) + 1;
-      rows.push({ day: d, balance: +balance.toFixed(2), profit: +profit.toFixed(2), bracket: b });
+
+      // Check if we've crossed into a new bracket
+      const newBracket = Math.floor((balance - start) / bracket) + 1;
+      if (newBracket > currentBracket) {
+        currentBracket = newBracket;
+        bracketBase = start + (currentBracket - 1) * bracket; // new lot base
+      }
+
+      rows.push({ day: d, balance: +balance.toFixed(2), profit: +profit.toFixed(2), bracket: currentBracket });
     }
 
     const final   = rows[rows.length-1].balance;
