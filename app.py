@@ -1,0 +1,167 @@
+import streamlit as st
+import pandas as pd
+import plotly.graph_objects as go
+import math
+
+# ── Page config ───────────────────────────────────────────────────────────────
+st.set_page_config(
+    page_title="Bracketed Trading Growth Calculator",
+    page_icon="📈",
+    layout="wide",
+)
+
+# ── CSS: dark theme polish ────────────────────────────────────────────────────
+st.markdown("""
+<style>
+  /* body / app background */
+  .stApp { background-color: #0d1117; color: #e6edf3; }
+
+  /* sidebar */
+  [data-testid="stSidebar"] { background-color: #161b22; }
+  [data-testid="stSidebar"] label { color: #c9d1d9 !important; }
+
+  /* metric cards */
+  [data-testid="metric-container"] {
+      background: linear-gradient(135deg, #1c2333, #21262d);
+      border: 1px solid #30363d;
+      border-radius: 12px;
+      padding: 16px 20px;
+  }
+
+  /* headers */
+  h1, h2, h3 { color: #58a6ff !important; }
+
+  /* dataframe */
+  [data-testid="stDataFrame"] { border-radius: 10px; overflow: hidden; }
+
+  /* divider accent */
+  hr { border-color: #30363d !important; }
+
+  /* number inputs */
+  input[type="number"] { background-color: #161b22 !important; color: #e6edf3 !important; }
+</style>
+""", unsafe_allow_html=True)
+
+# ── Title ─────────────────────────────────────────────────────────────────────
+st.title("📈 Bracketed Trading Growth Calculator")
+st.markdown("*Simulate compound account growth as you unlock higher lot brackets.*")
+st.divider()
+
+# ── Sidebar inputs ────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.header("⚙️ Settings")
+    starting_balance = st.number_input(
+        "Starting Balance ($)", min_value=10.0, value=100.0, step=10.0, format="%.2f"
+    )
+    daily_profit_pct = st.number_input(
+        "Net Daily Profit (%)", min_value=0.1, max_value=50.0, value=3.0, step=0.1, format="%.1f"
+    )
+    bracket_size = st.number_input(
+        "Bracket Size ($)", min_value=10.0, value=100.0, step=10.0, format="%.2f",
+        help="Every time profit grows by this amount, the lot bracket increases by 1."
+    )
+    num_days = st.slider("Projection Days", min_value=30, max_value=730, value=180, step=10)
+    st.divider()
+    st.caption("Built with ❤️ for copy traders")
+
+# ── Calculation ───────────────────────────────────────────────────────────────
+rows = []
+balance = starting_balance
+
+for day in range(1, num_days + 1):
+    profit = balance * (daily_profit_pct / 100)
+    balance += profit
+    bracket = math.floor((balance - starting_balance) / bracket_size) + 1
+    rows.append({
+        "Day": day,
+        "Balance ($)": round(balance, 2),
+        "Daily Profit ($)": round(profit, 2),
+        "Bracket": int(bracket),
+    })
+
+df = pd.DataFrame(rows)
+
+# ── Key metrics ───────────────────────────────────────────────────────────────
+final_balance = df["Balance ($)"].iloc[-1]
+total_gain    = final_balance - starting_balance
+max_bracket   = df["Bracket"].iloc[-1]
+gain_pct      = (total_gain / starting_balance) * 100
+
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Starting Balance",  f"${starting_balance:,.2f}")
+col2.metric("Final Balance",     f"${final_balance:,.2f}",  delta=f"+${total_gain:,.2f}")
+col3.metric("Total Growth",      f"{gain_pct:,.1f}%")
+col4.metric("Max Bracket",       f"#{max_bracket}")
+
+st.divider()
+
+# ── Chart ─────────────────────────────────────────────────────────────────────
+fig = go.Figure()
+
+# Balance line
+fig.add_trace(go.Scatter(
+    x=df["Day"], y=df["Balance ($)"],
+    mode="lines",
+    name="Balance ($)",
+    line=dict(color="#58a6ff", width=2.5),
+    fill="tozeroy",
+    fillcolor="rgba(88, 166, 255, 0.08)",
+    hovertemplate="Day %{x}<br>Balance: $%{y:,.2f}<extra></extra>",
+))
+
+# Bracket-change markers
+bracket_changes = df[df["Bracket"] != df["Bracket"].shift(1)]
+fig.add_trace(go.Scatter(
+    x=bracket_changes["Day"],
+    y=bracket_changes["Balance ($)"],
+    mode="markers",
+    name="Bracket Up ▲",
+    marker=dict(color="#3fb950", size=9, symbol="triangle-up",
+                line=dict(color="#ffffff", width=1)),
+    hovertemplate="Day %{x} — Bracket %{customdata}<br>Balance: $%{y:,.2f}<extra></extra>",
+    customdata=bracket_changes["Bracket"],
+))
+
+fig.update_layout(
+    template="plotly_dark",
+    paper_bgcolor="#0d1117",
+    plot_bgcolor="#0d1117",
+    title=dict(text="Account Growth Over Time", font=dict(size=18, color="#58a6ff")),
+    xaxis=dict(title="Day", gridcolor="#21262d", zeroline=False),
+    yaxis=dict(title="Balance ($)", gridcolor="#21262d", zeroline=False,
+               tickformat="$,.2f"),
+    legend=dict(bgcolor="#161b22", bordercolor="#30363d", borderwidth=1),
+    hovermode="x unified",
+    height=480,
+    margin=dict(l=10, r=10, t=50, b=10),
+)
+
+st.plotly_chart(fig, use_container_width=True)
+
+st.divider()
+
+# ── Table ─────────────────────────────────────────────────────────────────────
+st.subheader("📋 Day-by-Day Breakdown")
+
+# Colour bracket column
+def bracket_color(val):
+    palette = ["#1f3d2e", "#1a3a5c", "#3d2b1f", "#3a1f3d", "#2b3d1f",
+               "#3d3a1f", "#1f2b3d", "#3d1f2b", "#1f3d3a", "#2b1f3d"]
+    idx = (val - 1) % len(palette)
+    return f"background-color: {palette[idx]}; color: #e6edf3"
+
+styled = (
+    df.style
+    .applymap(bracket_color, subset=["Bracket"])
+    .format({"Balance ($)": "${:,.2f}", "Daily Profit ($)": "${:,.2f}"})
+    .set_properties(**{"background-color": "#161b22", "color": "#e6edf3"})
+)
+
+st.dataframe(styled, use_container_width=True, height=420)
+
+# ── Footer ────────────────────────────────────────────────────────────────────
+st.divider()
+st.caption(
+    f"Projection assumes {daily_profit_pct}% net daily profit, compounding each day. "
+    "Bracket increases every $" + f"{bracket_size:,.0f} of cumulative profit."
+)
