@@ -81,7 +81,7 @@ with st.sidebar:
         "Bracket Size ($)", min_value=10.0, value=100.0, step=10.0, format="%.2f",
         help="Every time profit grows by this amount, the lot bracket increases by 1."
     )
-    num_days = st.slider("Projection Days", min_value=30, max_value=730, value=180, step=10)
+    num_days = st.slider("Projection Days", min_value=30, max_value=730, value=60, step=10)
     st.divider()
     st.caption("Built with ❤️ for copy traders")
 
