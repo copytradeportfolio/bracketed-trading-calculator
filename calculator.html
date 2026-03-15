@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bracketed Trading Growth Calculator</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    padding: 20px;
+    min-height: 100vh;
+  }
+
+  h1 {
+    font-size: 1.6rem;
+    color: #58a6ff;
+    margin-bottom: 4px;
+  }
+  .subtitle { color: #8b949e; font-size: 0.9rem; margin-bottom: 20px; }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 5px; min-width: 140px; }
+  .control-group label { font-size: 0.78rem; color: #8b949e; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; }
+  .control-group input[type="number"] {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 7px;
+    color: #e6edf3;
+    font-size: 1rem;
+    padding: 7px 10px;
+    width: 100%;
+    outline: none;
+  }
+  .control-group input[type="number"]:focus { border-color: #58a6ff; }
+  .control-group input[type="range"] { accent-color: #58a6ff; width: 100%; cursor: pointer; }
+  .range-val { font-size: 0.85rem; color: #58a6ff; font-weight: 700; }
+
+  /* Metrics */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .metric {
+    background: linear-gradient(135deg, #1c2333, #21262d);
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .metric-label { color: #a8c0d6; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .metric-value { color: #ffffff; font-size: 1.7rem; font-weight: 700; line-height: 1.1; }
+  .metric-delta { color: #3fb950; font-size: 0.88rem; margin-top: 4px; }
+
+  /* Chart */
+  .chart-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .chart-title { color: #58a6ff; font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+
+  /* Table */
+  .table-box {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 12px;
+    padding: 16px;
+    overflow-x: auto;
+  }
+  .table-title { color: #58a6ff; font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; min-width: 400px; }
+  thead tr { background: #21262d; }
+  thead th { padding: 9px 12px; text-align: left; color: #8b949e; font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  tbody tr { border-bottom: 1px solid #21262d; }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:hover { background: #1c2333; }
+  tbody td { padding: 8px 12px; color: #e6edf3; }
+  .bracket-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    background: #1f3d5c;
+    color: #58a6ff;
+  }
+
+  hr { border: none; border-top: 1px solid #30363d; margin: 20px 0; }
+  .footer { color: #4a5568; font-size: 0.78rem; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>📈 Bracketed Trading Growth Calculator</h1>
+<p class="subtitle">Simulate compound account growth as you unlock higher lot brackets.</p>
+
+<!-- Controls -->
+<div class="controls">
+  <div class="control-group">
+    <label>Starting Balance ($)</label>
+    <input type="number" id="startBalance" value="100" min="10" step="10">
+  </div>
+  <div class="control-group">
+    <label>Net Daily Profit (%)</label>
+    <input type="number" id="dailyPct" value="3" min="0.1" max="50" step="0.1">
+  </div>
+  <div class="control-group">
+    <label>Bracket Size ($)</label>
+    <input type="number" id="bracketSize" value="100" min="10" step="10">
+  </div>
+  <div class="control-group" style="min-width:180px;">
+    <label>Projection Days: <span class="range-val" id="daysVal">60</span></label>
+    <input type="range" id="numDays" value="60" min="30" max="730" step="10">
+  </div>
+</div>
+
+<!-- Metrics -->
+<div class="metrics">
+  <div class="metric">
+    <div class="metric-label">Starting Balance</div>
+    <div class="metric-value" id="m-start">$100.00</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Final Balance</div>
+    <div class="metric-value" id="m-final">—</div>
+    <div class="metric-delta" id="m-gain">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Total Growth</div>
+    <div class="metric-value" id="m-pct">—</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Max Bracket</div>
+    <div class="metric-value" id="m-bracket">—</div>
+  </div>
+</div>
+
+<!-- Chart -->
+<div class="chart-box">
+  <div class="chart-title">Account Growth Over Time</div>
+  <canvas id="growthChart" height="220"></canvas>
+</div>
+
+<!-- Table -->
+<div class="table-box">
+  <div class="table-title">📋 Day-by-Day Breakdown</div>
+  <div style="max-height:360px;overflow-y:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Day</th>
+          <th>Balance ($)</th>
+          <th>Daily Profit ($)</th>
+          <th>Bracket</th>
+        </tr>
+      </thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<hr>
+<p class="footer" id="footer-txt"></p>
+
+<script>
+  let chart = null;
+
+  function fmt(n) { return n.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+  function calculate() {
+    const start   = parseFloat(document.getElementById('startBalance').value) || 100;
+    const pct     = parseFloat(document.getElementById('dailyPct').value)     || 3;
+    const bracket = parseFloat(document.getElementById('bracketSize').value)  || 100;
+    const days    = parseInt(document.getElementById('numDays').value)        || 60;
+
+    document.getElementById('daysVal').textContent = days;
+
+    const rows = [];
+    let balance = start;
+    for (let d = 1; d <= days; d++) {
+      const profit = balance * (pct / 100);
+      balance += profit;
+      const b = Math.floor((balance - start) / bracket) + 1;
+      rows.push({ day: d, balance: +balance.toFixed(2), profit: +profit.toFixed(2), bracket: b });
+    }
+
+    const final  = rows[rows.length - 1].balance;
+    const gain   = final - start;
+    const gainPct = (gain / start) * 100;
+    const maxB   = rows[rows.length - 1].bracket;
+
+    // Metrics
+    document.getElementById('m-start').textContent   = '$' + fmt(start);
+    document.getElementById('m-final').textContent   = '$' + fmt(final);
+    document.getElementById('m-gain').textContent    = '▲ +$' + fmt(gain);
+    document.getElementById('m-pct').textContent     = gainPct.toFixed(1) + '%';
+    document.getElementById('m-bracket').textContent = '#' + maxB;
+
+    // Chart
+    const labels   = rows.map(r => r.day);
+    const balances = rows.map(r => r.balance);
+
+    // Bracket change points
+    const bcDays = [], bcBals = [];
+    for (let i = 0; i < rows.length; i++) {
+      if (i === 0 || rows[i].bracket !== rows[i-1].bracket) {
+        bcDays.push(rows[i].day);
+        bcBals.push(rows[i].balance);
+      }
+    }
+
+    if (chart) chart.destroy();
+    chart = new Chart(document.getElementById('growthChart'), {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          {
+            label: 'Balance ($)',
+            data: balances,
+            borderColor: '#58a6ff',
+            backgroundColor: 'rgba(88,166,255,0.07)',
+            fill: true,
+            borderWidth: 2.5,
+            pointRadius: 0,
+            tension: 0.3,
+          },
+          {
+            label: 'Bracket Up',
+            data: labels.map(d => bcDays.includes(d) ? balances[d-1] : null),
+            borderColor: 'transparent',
+            backgroundColor: '#3fb950',
+            pointRadius: 7,
+            pointStyle: 'triangle',
+            showLine: false,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { labels: { color: '#8b949e' } },
+          tooltip: {
+            callbacks: {
+              label: ctx => ' $' + fmt(ctx.parsed.y)
+            }
+          }
+        },
+        scales: {
+          x: { ticks: { color: '#8b949e' }, grid: { color: '#21262d' } },
+          y: { ticks: { color: '#8b949e', callback: v => '$' + fmt(v) }, grid: { color: '#21262d' } }
+        }
+      }
+    });
+
+    // Table
+    const tbody = document.getElementById('tableBody');
+    tbody.innerHTML = '';
+    rows.forEach(r => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.day}</td>
+        <td>$${fmt(r.balance)}</td>
+        <td>$${fmt(r.profit)}</td>
+        <td><span class="bracket-badge">#${r.bracket}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('footer-txt').textContent =
+      `Projection assumes ${pct}% net daily profit, compounding each day. Bracket increases every $${bracket.toLocaleString()} of cumulative profit.`;
+  }
+
+  // Event listeners
+  ['startBalance','dailyPct','bracketSize','numDays'].forEach(id => {
+    document.getElementById(id).addEventListener('input', calculate);
+  });
+
+  calculate();
+</script>
+</body>
+</html>
