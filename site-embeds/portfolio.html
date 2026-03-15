@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: #ffffff;
+    padding: 16px;
+  }
+
+  /* ── Selection criteria box ── */
+  .criteria-box {
+    background: linear-gradient(135deg, #f0f7ff, #e8f4fd);
+    border-left: 4px solid #1a73e8;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    color: #1a1a2e;
+    font-size: 0.92rem;
+    line-height: 1.7;
+  }
+  .criteria-box h3 {
+    color: #1a73e8;
+    font-size: 1rem;
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .criteria-box ul {
+    padding-left: 18px;
+  }
+  .criteria-box li { margin-bottom: 4px; }
+
+  /* ── Table wrapper ── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    min-width: 600px;
+  }
+
+  thead tr {
+    background: #1a73e8;
+    color: #ffffff;
+  }
+
+  thead th {
+    padding: 10px 8px;
+    text-align: left;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e8edf2;
+    transition: background 0.15s;
+  }
+  tbody tr:hover { background: #f0f7ff; }
+  tbody tr:last-child { border-bottom: none; }
+
+  tbody td {
+    padding: 9px 8px;
+    color: #2c3e50;
+    vertical-align: middle;
+  }
+
+  /* Yield badge */
+  .badge-green {
+    display: inline-block;
+    background: #e6f9ee;
+    color: #1a7a3c;
+    font-weight: 700;
+    font-size: 0.88rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid #b2dfcc;
+  }
+
+  /* Drawdown badge */
+  .badge-red {
+    display: inline-block;
+    background: #fff0f0;
+    color: #c0392b;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 3px 9px;
+    border-radius: 20px;
+    border: 1px solid #f5c6c6;
+  }
+
+  /* CTA button */
+  .btn-copy {
+    display: inline-block;
+    background: #1a73e8;
+    color: #ffffff !important;
+    font-weight: 600;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+  .btn-copy:hover { background: #1557b0; }
+
+  /* Placeholder row */
+  .placeholder td {
+    color: #aab0ba;
+    font-style: italic;
+  }
+
+  /* Remark tag */
+  .tag {
+    display: inline-block;
+    background: #fff3cd;
+    color: #7d5a00;
+    font-size: 0.78rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #ffe08a;
+  }
+</style>
+</head>
+<body>
+
+<!-- Selection Criteria -->
+<div class="criteria-box">
+  <h3>🎯 My Selection Criteria</h3>
+  <ul>
+    <li><strong>Daily Profit Target:</strong> ~5% or more</li>
+    <li><strong>Cut Loss:</strong> Yes — trader has a defined stop loss strategy</li>
+    <li><strong>Consistency:</strong> Yes — no frequent or erratic cut losses</li>
+  </ul>
+</div>
+
+<!-- Data disclaimer -->
+<p style="font-size:0.78rem;color:#888;margin-bottom:8px;">
+  📅 <em>Yield and Max Drawdown figures are as of <strong>15 March 2026</strong> and may change. Always check the live account page before subscribing.</em>
+</p>
+
+<!-- Accounts Table -->
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Strategy / Account</th>
+      <th>Type</th>
+      <th>Yield</th>
+      <th>Max DD</th>
+      <th>Leverage</th>
+      <th>Min Deposit</th>
+      <th>Commission</th>
+      <th>Remark</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+
+    <!-- Account 1 -->
+    <tr>
+      <td>1</td>
+      <td><strong>EAKawAlphaTraderRebond</strong><br><small style="color:#888;">MT5 #37311771</small></td>
+      <td>MT5 ProCent USD</td>
+      <td><span class="badge-green">33.19%</span></td>
+      <td><span class="badge-red">-20.21%</span></td>
+      <td>1:2000</td>
+      <td>$100</td>
+      <td>10% of profit</td>
+      <td><span class="tag">Active ✅</span></td>
+      <td><a class="btn-copy" href="https://my.roboforex.com/en/register-copyfx/?trader_account=37311771&partner_token=eyjl3br" target="_blank">Copy Trade</a></td>
+    </tr>
+
+    <!-- Account 2 -->
+    <tr>
+      <td>2</td>
+      <td><strong>eaSATRIA</strong><br><small style="color:#888;">MT4 #46155328</small></td>
+      <td>MT4 ProCent USD</td>
+      <td><span class="badge-green">228.94%</span></td>
+      <td><span class="badge-red">-33.32%</span></td>
+      <td>1:2000</td>
+      <td>$100</td>
+      <td>Free</td>
+      <td><span class="tag">Active ✅</span></td>
+      <td><a class="btn-copy" href="https://my.roboforex.com/en/register-copyfx/?trader_account=46155328&partner_token=7aetdz6" target="_blank">Copy Trade</a></td>
+    </tr>
+
+    <!-- Account 3 -->
+    <tr>
+      <td>3</td>
+      <td><strong>AtmBot</strong> <small style="color:#888;">Gold Bot</small><br><small style="color:#888;">MT4 #47142040</small></td>
+      <td>MT4 ProCent USD</td>
+      <td><span class="badge-red">-100%</span></td>
+      <td><span class="badge-red">-100%</span></td>
+      <td>1:2000</td>
+      <td>$100</td>
+      <td>10% of profit</td>
+      <td><span class="tag" style="background:#fff3cd;color:#7d5a00;">📈 Profitable since 18 Feb 2026</span></td>
+      <td><a class="btn-copy" href="https://my.roboforex.com/en/register-copyfx/?trader_account=47142040&partner_token=f5onfcg" target="_blank">Copy Trade</a></td>
+    </tr>
+
+    <!-- Placeholder 4 -->
+    <tr class="placeholder">
+      <td>4</td>
+      <td colspan="8">— Coming soon —</td>
+      <td></td>
+    </tr>
+
+  </tbody>
+</table>
+</div>
+
+</body>
+</html>
