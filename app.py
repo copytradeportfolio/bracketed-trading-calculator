@@ -28,6 +28,27 @@ st.markdown("""
       padding: 16px 20px;
   }
 
+  /* metric label */
+  [data-testid="metric-container"] label {
+      color: #a0b0c8 !important;
+      font-size: 0.95rem !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.03em;
+  }
+
+  /* metric value */
+  [data-testid="metric-container"] [data-testid="stMetricValue"] {
+      color: #ffffff !important;
+      font-size: 1.8rem !important;
+      font-weight: 700 !important;
+  }
+
+  /* metric delta */
+  [data-testid="metric-container"] [data-testid="stMetricDelta"] {
+      color: #3fb950 !important;
+      font-size: 1rem !important;
+  }
+
   /* headers */
   h1, h2, h3 { color: #58a6ff !important; }
 
